@@ -72,7 +72,7 @@ width="900"
 ### Mobile
 
 <img
-src=mobile.png"
+src="mobile.png"
 alt="DropMail mobile layout"
 width="340"
 />
