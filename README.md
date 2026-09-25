@@ -13,11 +13,11 @@
 
 <br>
 
-<a href="https://github.com/your-username/dropmail">
-  <img src="https://img.shields.io/github/stars/your-username/dropmail?style=for-the-badge&logo=github&label=STARS" alt="GitHub Stars">
+<a href="https://github.com/TemporaryEmailFree/Temp">
+  <img src="https://img.shields.io/github/stars/TemporaryEmailFree/Temp?style=for-the-badge&logo=github&label=STARS" alt="GitHub Stars">
 </a>
-<a href="https://github.com/your-username/dropmail">
-  <img src="https://img.shields.io/github/forks/your-username/dropmail?style=for-the-badge&logo=github&label=FORKS" alt="GitHub Forks">
+<a href="https://github.com/TemporaryEmailFree/Temp">
+  <img src="https://img.shields.io/github/forks/TemporaryEmailFree/Temp?style=for-the-badge&logo=github&label=FORKS" alt="GitHub Forks">
 </a>
 <img src="https://img.shields.io/badge/HTML-5-orange?style=for-the-badge&logo=html5" alt="HTML5">
 <img src="https://img.shields.io/badge/CSS-3-blue?style=for-the-badge&logo=css3" alt="CSS3">
