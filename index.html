@@ -1,0 +1,2966 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="DropMail — your beautiful temporary email inbox."
+    />
+
+    <title>DropMail — Temporary Email</title>
+
+    <style>
+      :root {
+        --bg: #05060a;
+        --panel: rgba(17, 19, 29, 0.72);
+        --panel-strong: rgba(20, 23, 36, 0.94);
+        --soft: rgba(255, 255, 255, 0.045);
+        --soft-2: rgba(255, 255, 255, 0.07);
+
+        --border: rgba(255, 255, 255, 0.095);
+        --border-bright: rgba(255, 255, 255, 0.17);
+
+        --text: #f7f8fc;
+        --muted: #a4abbc;
+        --dim: #70788d;
+
+        --purple: #8d7cff;
+        --blue: #45d7ff;
+        --green: #43df9a;
+        --red: #ff6685;
+
+        --shadow: 0 30px 100px rgba(0, 0, 0, 0.45);
+        --radius: 24px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+
+      body {
+        overflow-x: hidden;
+        background:
+          radial-gradient(
+            circle at 10% 10%,
+            rgba(141, 124, 255, 0.16),
+            transparent 28%
+          ),
+          radial-gradient(
+            circle at 90% 12%,
+            rgba(69, 215, 255, 0.1),
+            transparent 25%
+          ),
+          radial-gradient(
+            circle at 50% 100%,
+            rgba(67, 223, 154, 0.055),
+            transparent 28%
+          ),
+          #05060a;
+      }
+
+      #particles {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.5;
+      }
+
+      .orb {
+        position: fixed;
+        width: 350px;
+        height: 350px;
+        border-radius: 50%;
+        filter: blur(85px);
+        pointer-events: none;
+        opacity: 0.19;
+        z-index: 0;
+        animation: orbFloat 12s ease-in-out infinite alternate;
+      }
+
+      .orb.one {
+        left: -130px;
+        top: -120px;
+        background: #7965ff;
+      }
+
+      .orb.two {
+        right: -150px;
+        top: 20%;
+        background: #3dcdf7;
+        animation-delay: -3s;
+      }
+
+      .orb.three {
+        left: 35%;
+        bottom: -190px;
+        background: #37d89a;
+        animation-delay: -7s;
+      }
+
+      @keyframes orbFloat {
+        from {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+
+        to {
+          transform: translate3d(30px, -25px, 0) scale(1.08);
+        }
+      }
+
+      .app {
+        position: relative;
+        z-index: 2;
+        width: min(1450px, calc(100% - 28px));
+        min-height: calc(100vh - 28px);
+        margin: 14px auto;
+        border: 1px solid var(--border);
+        border-radius: 30px;
+        overflow: hidden;
+        background: rgba(8, 10, 16, 0.65);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(30px) saturate(135%);
+        -webkit-backdrop-filter: blur(30px) saturate(135%);
+        animation: appAppear 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+
+      @keyframes appAppear {
+        from {
+          opacity: 0;
+          transform: translateY(18px) scale(0.985);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .app::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        border-radius: inherit;
+        background: linear-gradient(
+          110deg,
+          transparent 20%,
+          rgba(255, 255, 255, 0.035) 43%,
+          rgba(255, 255, 255, 0.02) 53%,
+          transparent 75%
+        );
+        background-size: 240% 100%;
+        animation: glassSweep 10s linear infinite;
+      }
+
+      @keyframes glassSweep {
+        from {
+          background-position: 200% 0;
+        }
+
+        to {
+          background-position: -200% 0;
+        }
+      }
+
+      .topbar {
+        position: relative;
+        z-index: 3;
+        height: 78px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 0 20px;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.045),
+          rgba(255, 255, 255, 0.012)
+        );
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+      }
+
+      .logo {
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        font-size: 21px;
+        background: linear-gradient(
+          135deg,
+          rgba(141, 124, 255, 0.97),
+          rgba(69, 215, 255, 0.9)
+        );
+        box-shadow: 0 12px 30px rgba(101, 88, 235, 0.25);
+        animation: logoFloat 3.5s ease-in-out infinite;
+      }
+
+      @keyframes logoFloat {
+        50% {
+          transform: translateY(-2px) rotate(2deg);
+        }
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 16px;
+        letter-spacing: -0.025em;
+      }
+
+      .brand p {
+        margin: 3px 0 0;
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 11px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.025);
+        color: var(--muted);
+        font-size: 11px;
+        white-space: nowrap;
+      }
+
+      .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 14px rgba(67, 223, 154, 0.7);
+        animation: statusPulse 2s ease-in-out infinite;
+      }
+
+      @keyframes statusPulse {
+        50% {
+          opacity: 0.45;
+          transform: scale(0.72);
+        }
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: 360px minmax(0, 1fr);
+        min-height: calc(100vh - 106px);
+      }
+
+      .sidebar {
+        padding: 22px;
+        border-right: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.014);
+      }
+
+      .hero {
+        position: relative;
+        padding: 20px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background:
+          radial-gradient(
+            circle at 92% 10%,
+            rgba(141, 124, 255, 0.17),
+            transparent 29%
+          ),
+          rgba(255, 255, 255, 0.026);
+        overflow: hidden;
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        right: -45px;
+        bottom: -45px;
+        border-radius: 50%;
+        border: 1px solid rgba(69, 215, 255, 0.14);
+        animation: heroRing 4s ease-in-out infinite;
+      }
+
+      @keyframes heroRing {
+        50% {
+          transform: scale(1.35);
+          opacity: 0.35;
+        }
+      }
+
+      .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+      }
+
+      .hero h2 {
+        margin: 10px 0 7px;
+        font-size: 26px;
+        line-height: 1.1;
+        letter-spacing: -0.04em;
+      }
+
+      .hero > p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .address-section {
+        margin-top: 19px;
+      }
+
+      .address-label {
+        margin-bottom: 7px;
+        color: var(--dim);
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .address-box {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: rgba(0, 0, 0, 0.19);
+        overflow: hidden;
+      }
+
+      .address-box::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -120px;
+        width: 100px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.16),
+          transparent
+        );
+        transform: skewX(-18deg);
+        animation: addressSweep 4.5s ease-in-out infinite;
+      }
+
+      @keyframes addressSweep {
+        0%,
+        55% {
+          left: -120px;
+        }
+
+        85%,
+        100% {
+          left: 120%;
+        }
+      }
+
+      .address {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        color: #fff;
+        font-size: 11px;
+      }
+
+      button {
+        font-family: inherit;
+      }
+
+      .btn {
+        appearance: none;
+        border: 1px solid var(--border);
+        border-radius: 13px;
+        background: rgba(255, 255, 255, 0.045);
+        color: var(--text);
+        padding: 10px 13px;
+        font-size: 11px;
+        font-weight: 800;
+        cursor: pointer;
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease,
+          border-color 0.18s ease,
+          box-shadow 0.18s ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        border-color: var(--border-bright);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .btn:active {
+        transform: translateY(1px) scale(0.985);
+      }
+
+      .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn.primary {
+        position: relative;
+        overflow: hidden;
+        border-color: rgba(141, 124, 255, 0.38);
+        background: linear-gradient(
+          135deg,
+          rgba(141, 124, 255, 0.95),
+          rgba(101, 86, 227, 0.95)
+        );
+        box-shadow: 0 12px 30px rgba(98, 85, 224, 0.21);
+      }
+
+      .btn.primary::after {
+        content: "";
+        position: absolute;
+        top: -120%;
+        left: -60%;
+        width: 70%;
+        height: 320%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.23),
+          transparent
+        );
+        transform: rotate(20deg);
+        animation: buttonShine 5s ease-in-out infinite;
+        pointer-events: none;
+      }
+
+      @keyframes buttonShine {
+        0%,
+        60% {
+          left: -70%;
+        }
+
+        88%,
+        100% {
+          left: 140%;
+        }
+      }
+
+      .action-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 9px;
+      }
+
+      .btn-wide {
+        width: 100%;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 11px;
+      }
+
+      .metric {
+        padding: 13px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.025);
+        transition:
+          transform 0.2s ease,
+          background 0.2s ease;
+      }
+
+      .metric:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.045);
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 19px;
+        letter-spacing: -0.04em;
+      }
+
+      .metric span {
+        color: var(--dim);
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+
+      .poll-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-top: 13px;
+        color: var(--dim);
+        font-size: 10px;
+      }
+
+      .poll-status {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .tiny-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--blue);
+        box-shadow: 0 0 10px rgba(69, 215, 255, 0.7);
+      }
+
+      .info {
+        margin-top: 14px;
+        padding: 13px 14px;
+        border: 1px solid rgba(69, 215, 255, 0.12);
+        border-radius: 16px;
+        background: rgba(69, 215, 255, 0.034);
+        color: #bac9df;
+        font-size: 10px;
+        line-height: 1.6;
+      }
+
+      .info strong {
+        color: #e5edf9;
+      }
+
+      .info a,
+      .provider a {
+        color: #bceaff;
+      }
+
+      .provider {
+        margin-top: 13px;
+        color: var(--dim);
+        font-size: 9px;
+        line-height: 1.55;
+      }
+
+      .inbox {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+
+      .inbox-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 21px 24px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .inbox-title h2 {
+        margin: 0;
+        font-size: 21px;
+        letter-spacing: -0.035em;
+      }
+
+      .inbox-title p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .refresh {
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        font-size: 16px;
+      }
+
+      .refresh.spinning {
+        animation: spin 0.7s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .content {
+        flex: 1;
+        min-width: 0;
+        padding: 18px;
+        overflow: auto;
+      }
+
+      .search-wrap {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 13px;
+      }
+
+      .search {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        border-radius: 15px;
+        outline: none;
+        background: rgba(255, 255, 255, 0.025);
+        color: var(--text);
+        font-size: 11px;
+        transition:
+          border 0.18s ease,
+          box-shadow 0.18s ease;
+      }
+
+      .search:focus {
+        border-color: rgba(141, 124, 255, 0.42);
+        box-shadow: 0 0 0 4px rgba(141, 124, 255, 0.07);
+      }
+
+      .empty {
+        min-height: 500px;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+      }
+
+      .empty-card {
+        position: relative;
+        width: min(650px, 100%);
+        padding: 42px 28px;
+        text-align: center;
+        border: 1px dashed var(--border-bright);
+        border-radius: 28px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.018);
+      }
+
+      .empty-card h3 {
+        position: relative;
+        z-index: 2;
+        margin: 10px 0 7px;
+        font-size: 19px;
+      }
+
+      .empty-card p {
+        position: relative;
+        z-index: 2;
+        max-width: 500px;
+        margin: 0 auto;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.65;
+      }
+
+      .empty-icon {
+        position: relative;
+        z-index: 2;
+        width: 76px;
+        height: 76px;
+        display: grid;
+        place-items: center;
+        margin: 0 auto;
+        border: 1px solid var(--border);
+        border-radius: 25px;
+        background: linear-gradient(
+          135deg,
+          rgba(141, 124, 255, 0.13),
+          rgba(69, 215, 255, 0.08)
+        );
+        font-size: 33px;
+        animation: emptyBob 3s ease-in-out infinite;
+      }
+
+      @keyframes emptyBob {
+        50% {
+          transform: translateY(-7px) rotate(1deg);
+        }
+      }
+
+      .orbit {
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        top: 22px;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 1px solid rgba(141, 124, 255, 0.11);
+        border-radius: 50%;
+        animation: orbitPulse 3.5s ease-in-out infinite;
+      }
+
+      .orbit::before {
+        content: "";
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        top: 3px;
+        left: 50%;
+        border-radius: 50%;
+        background: var(--purple);
+        box-shadow: 0 0 17px rgba(141, 124, 255, 0.9);
+        transform-origin: 0 97px;
+        animation: orbitSpin 5.5s linear infinite;
+      }
+
+      @keyframes orbitPulse {
+        50% {
+          transform: translateX(-50%) scale(1.08);
+          opacity: 0.55;
+        }
+      }
+
+      @keyframes orbitSpin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .listening {
+        position: relative;
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: 18px;
+        padding: 7px 11px;
+        border: 1px solid rgba(67, 223, 154, 0.15);
+        border-radius: 999px;
+        background: rgba(67, 223, 154, 0.035);
+        color: #bff9df;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+      }
+
+      .listening span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 12px rgba(67, 223, 154, 0.8);
+        animation: listeningPulse 1.25s ease-in-out infinite;
+      }
+
+      @keyframes listeningPulse {
+        50% {
+          opacity: 0.25;
+          transform: scale(0.55);
+        }
+      }
+
+      .messages {
+        display: grid;
+        gap: 9px;
+      }
+
+      .message {
+        position: relative;
+        display: grid;
+        grid-template-columns: 46px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        padding: 13px;
+        border: 1px solid var(--border);
+        border-radius: 19px;
+        background: rgba(255, 255, 255, 0.026);
+        cursor: pointer;
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease,
+          border-color 0.18s ease,
+          box-shadow 0.18s ease;
+        animation: messageIn 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) var(--delay)
+          both;
+      }
+
+      .message:hover {
+        transform: translateY(-2px) scale(1.005);
+        border-color: var(--border-bright);
+        background: rgba(255, 255, 255, 0.055);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.13);
+      }
+
+      @keyframes messageIn {
+        from {
+          opacity: 0;
+          transform: translateY(9px) scale(0.99);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .message.unread {
+        background: linear-gradient(
+          90deg,
+          rgba(141, 124, 255, 0.075),
+          rgba(255, 255, 255, 0.024)
+        );
+        border-color: rgba(141, 124, 255, 0.22);
+      }
+
+      .message.unread::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 17%;
+        bottom: 17%;
+        width: 2px;
+        border-radius: 999px;
+        background: linear-gradient(
+          to bottom,
+          transparent,
+          var(--purple),
+          transparent
+        );
+        box-shadow: 0 0 13px rgba(141, 124, 255, 0.7);
+        animation: unreadGlow 2s ease-in-out infinite;
+      }
+
+      @keyframes unreadGlow {
+        50% {
+          opacity: 0.35;
+        }
+      }
+
+      .avatar {
+        width: 46px;
+        height: 46px;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        border: 1px solid var(--border);
+        border-radius: 15px;
+        background: linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.08),
+          rgba(255, 255, 255, 0.025)
+        );
+        font-size: 14px;
+        font-weight: 900;
+      }
+
+      .message-main {
+        min-width: 0;
+      }
+
+      .message-top {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .sender {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        font-weight: 850;
+      }
+
+      .subject {
+        margin-top: 4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        font-weight: 750;
+      }
+
+      .intro {
+        margin-top: 4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .message-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 7px;
+        color: var(--dim);
+        font-size: 9px;
+        white-space: nowrap;
+      }
+
+      .unread-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--blue);
+        box-shadow: 0 0 13px rgba(69, 215, 255, 0.7);
+      }
+
+      .badge {
+        padding: 4px 7px;
+        border: 1px solid rgba(69, 215, 255, 0.17);
+        border-radius: 999px;
+        background: rgba(69, 215, 255, 0.055);
+        color: #b7ecff;
+        font-size: 8px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .skeletons {
+        display: grid;
+        gap: 9px;
+      }
+
+      .skeleton {
+        height: 75px;
+        border: 1px solid var(--border);
+        border-radius: 19px;
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.025),
+          rgba(255, 255, 255, 0.07),
+          rgba(255, 255, 255, 0.025)
+        );
+        background-size: 220% 100%;
+        animation: shimmer 1.5s linear infinite;
+      }
+
+      @keyframes shimmer {
+        to {
+          background-position: -220% 0;
+        }
+      }
+
+      .detail {
+        display: none;
+      }
+
+      .detail.active {
+        display: block;
+        animation: detailIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+
+      @keyframes detailIn {
+        from {
+          opacity: 0;
+          transform: translateY(14px) scale(0.985);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .back-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 13px;
+      }
+
+      .email-card {
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.025);
+      }
+
+      .email-head {
+        padding: 21px;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.045),
+          rgba(255, 255, 255, 0.015)
+        );
+      }
+
+      .email-subject {
+        margin: 0 0 17px;
+        font-size: 23px;
+        line-height: 1.25;
+        letter-spacing: -0.03em;
+        overflow-wrap: anywhere;
+      }
+
+      .from-line {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+      }
+
+      .from-copy {
+        min-width: 0;
+      }
+
+      .from-copy strong {
+        display: block;
+        font-size: 12px;
+      }
+
+      .from-copy span {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 10px;
+        overflow-wrap: anywhere;
+      }
+
+      .email-body {
+        padding: 22px;
+        color: #e9edf6;
+        font-size: 13px;
+        line-height: 1.75;
+        overflow-wrap: anywhere;
+      }
+
+      .email-body-text {
+        white-space: pre-wrap;
+      }
+
+      .otp-box {
+        margin-top: 17px;
+        padding: 15px 17px;
+        border: 1px solid rgba(141, 124, 255, 0.26);
+        border-radius: 17px;
+        background: linear-gradient(
+          135deg,
+          rgba(141, 124, 255, 0.105),
+          rgba(69, 215, 255, 0.045)
+        );
+        animation: otpIn 0.45s ease both;
+      }
+
+      .otp-label {
+        color: var(--muted);
+        font-size: 9px;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+      }
+
+      .otp-code {
+        margin-top: 7px;
+        font-size: 25px;
+        font-weight: 950;
+        letter-spacing: 0.18em;
+        text-shadow: 0 0 24px rgba(141, 124, 255, 0.4);
+      }
+
+      @keyframes otpIn {
+        from {
+          opacity: 0;
+          transform: translateY(7px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .attachments {
+        margin-top: 18px;
+        padding: 13px 14px;
+        border: 1px solid var(--border);
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.025);
+        font-size: 10px;
+      }
+
+      .attachments-title {
+        font-weight: 850;
+      }
+
+      .attachments-list {
+        margin-top: 7px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      #toastStack {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 99999;
+        width: min(420px, calc(100vw - 36px));
+        display: grid;
+        gap: 8px;
+      }
+
+      .toast {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 13px 14px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: rgba(15, 17, 26, 0.94);
+        box-shadow: 0 20px 55px rgba(0, 0, 0, 0.38);
+        backdrop-filter: blur(15px);
+        color: var(--text);
+        font-size: 11px;
+        opacity: 0;
+        transform: translateY(13px) scale(0.97);
+        transition:
+          opacity 0.25s ease,
+          transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      .toast.good {
+        border-color: rgba(67, 223, 154, 0.23);
+      }
+
+      .toast.bad {
+        border-color: rgba(255, 102, 133, 0.23);
+      }
+
+      .toast-icon {
+        font-size: 13px;
+      }
+
+      .loader {
+        display: inline-block;
+        width: 13px;
+        height: 13px;
+        margin-right: 6px;
+        vertical-align: -2px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+
+      .burst {
+        position: fixed;
+        left: 50%;
+        top: 45%;
+        width: 1px;
+        height: 1px;
+        pointer-events: none;
+        z-index: 999999;
+      }
+
+      .burst span {
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--purple);
+        box-shadow: 0 0 16px rgba(141, 124, 255, 0.8);
+        animation: burstOut 0.95s cubic-bezier(0.15, 0.8, 0.25, 1) var(--delay)
+          both;
+      }
+
+      @keyframes burstOut {
+        from {
+          opacity: 1;
+          transform: translate(0, 0) scale(1);
+        }
+
+        to {
+          opacity: 0;
+          transform: translate(var(--x), var(--y)) scale(0.15);
+        }
+      }
+
+      .debug-panel {
+        position: relative;
+        z-index: 3;
+        margin-top: 16px;
+        padding: 14px;
+        border: 1px solid rgba(255, 102, 133, 0.22);
+        border-radius: 18px;
+        background: rgba(255, 102, 133, 0.035);
+        text-align: left;
+      }
+
+      .debug-panel strong {
+        display: block;
+        margin-bottom: 7px;
+        color: #ffd7df;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .debug-panel pre {
+        max-height: 260px;
+        margin: 0;
+        overflow: auto;
+        padding: 12px;
+        border-radius: 13px;
+        background: rgba(0, 0, 0, 0.3);
+        color: #dcecff;
+        font-size: 9px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      @media (max-width: 980px) {
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          border-right: 0;
+          border-bottom: 1px solid var(--border);
+        }
+      }
+
+      @media (max-width: 620px) {
+        .app {
+          width: calc(100% - 12px);
+          margin: 6px auto;
+          min-height: calc(100vh - 12px);
+          border-radius: 22px;
+        }
+
+        .topbar {
+          height: 68px;
+          padding: 0 14px;
+        }
+
+        .brand p {
+          display: none;
+        }
+
+        .sidebar {
+          padding: 14px;
+        }
+
+        .inbox-header {
+          padding: 17px 14px;
+        }
+
+        .content {
+          padding: 12px;
+        }
+
+        .message {
+          grid-template-columns: 42px minmax(0, 1fr);
+        }
+
+        .avatar {
+          width: 42px;
+          height: 42px;
+        }
+
+        .message-meta {
+          grid-column: 2;
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .new-label {
+          display: none;
+        }
+
+        .email-head,
+        .email-body {
+          padding: 17px;
+        }
+
+        .email-subject {
+          font-size: 19px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <canvas id="particles"></canvas>
+
+    <div class="orb one"></div>
+    <div class="orb two"></div>
+    <div class="orb three"></div>
+
+    <main class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="logo">✉</div>
+
+          <div>
+            <h1>DropMail</h1>
+            <p>disposable email • no signup</p>
+          </div>
+        </div>
+
+        <div class="status">
+          <span class="status-dot"></span>
+          <span id="connection">Starting…</span>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <aside class="sidebar">
+          <section class="hero">
+            <div class="eyebrow">⚡ Temporary inbox</div>
+
+            <h2>Your disposable email.</h2>
+
+            <p>
+              Use this address for sign-ups, verification emails, newsletters,
+              testing, and anything where you don't want to hand over your real
+              inbox.
+            </p>
+
+            <div class="address-section">
+              <div class="address-label">Your temporary address</div>
+
+              <div class="address-box">
+                <code id="address" class="address">Generating…</code>
+
+                <button id="copyBtn" class="btn" title="Copy email address">
+                  ⧉
+                </button>
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button id="newBtn" class="btn primary btn-wide">
+                <span id="newLabel">✨ New inbox</span>
+              </button>
+
+              <button id="refreshBtn" class="btn btn-wide">↻ Refresh</button>
+            </div>
+
+            <div class="metrics">
+              <div class="metric">
+                <strong id="totalCount">0</strong>
+                <span>messages</span>
+              </div>
+
+              <div class="metric">
+                <strong id="unreadCount">0</strong>
+                <span>unread</span>
+              </div>
+            </div>
+
+            <div class="poll-info">
+              <div class="poll-status">
+                <span class="tiny-dot"></span>
+                <span id="pollStatus">Waiting for mail…</span>
+              </div>
+
+              <span id="pollTimer">—</span>
+            </div>
+          </section>
+
+          <div class="info">
+            <strong>🛡️ Use it like a disposable inbox</strong>
+            <br />
+            Copy the address into a signup form, verification form, or testing
+            flow. When the site sends an email, it'll appear here automatically.
+          </div>
+
+          <div class="provider">
+            Mail delivery powered by
+            <a
+              href="https://mail123.click/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Mail123 </a
+            >.
+
+            <br />
+
+            Temporary mailboxes are automatically removed after the provider's
+            retention period.
+          </div>
+        </aside>
+
+        <section class="inbox">
+          <header class="inbox-header">
+            <div class="inbox-title">
+              <h2 id="pageTitle">Inbox</h2>
+
+              <p id="pageSubtitle">
+                Messages arriving at your temporary address.
+              </p>
+            </div>
+
+            <div class="header-actions">
+              <button id="topRefresh" class="btn refresh" title="Refresh inbox">
+                ↻
+              </button>
+
+              <button id="topNew" class="btn primary">
+                ✨
+                <span class="new-label">New inbox</span>
+              </button>
+            </div>
+          </header>
+
+          <div class="content">
+            <div id="listView">
+              <div class="search-wrap">
+                <input
+                  id="search"
+                  class="search"
+                  type="search"
+                  placeholder="Search sender, subject, preview, OTP…"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </div>
+
+              <div id="mailList"></div>
+            </div>
+
+            <div id="detailView" class="detail">
+              <div class="back-row">
+                <button id="backBtn" class="btn">← Back to inbox</button>
+
+                <button id="hideBtn" class="btn">Hide message</button>
+              </div>
+
+              <div id="emailDetail"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div id="toastStack"></div>
+
+    <script>
+      (() => {
+        "use strict";
+
+        /* =====================================================
+         CONFIG
+      ====================================================== */
+
+        const API = "https://mail123.fr/api/v1";
+
+        /*
+        Mail123 documents 10 message-list requests/minute
+        on the free API. We use 7 seconds between polls.
+      */
+
+        const STORAGE_KEY = "dropmail.mailbox.v2";
+
+        /* =====================================================
+         STATE
+      ====================================================== */
+
+        const state = {
+          mailbox: null,
+
+          messages: [],
+
+          currentMessage: null,
+
+          pollTimer: null,
+
+          countdownTimer: null,
+
+          nextPoll: 0,
+
+          creating: false,
+
+          refreshing: false,
+
+          knownIds: new Set(),
+
+          hiddenIds: new Set(),
+        };
+
+        /* =====================================================
+         DOM
+      ====================================================== */
+
+        const $ = (id) => document.getElementById(id);
+
+        /* =====================================================
+         STORAGE
+      ====================================================== */
+
+        function loadMailbox() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+
+            if (!raw) {
+              return null;
+            }
+
+            return JSON.parse(raw);
+          } catch (error) {
+            console.warn("Could not load saved mailbox:", error);
+            return null;
+          }
+        }
+
+        function saveMailbox() {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state.mailbox));
+          } catch (error) {
+            console.warn("Could not save mailbox:", error);
+          }
+        }
+
+        function forgetMailbox() {
+          try {
+            localStorage.removeItem(STORAGE_KEY);
+          } catch {}
+        }
+
+        /* =====================================================
+         ESCAPE
+      ====================================================== */
+
+        function escapeHTML(value) {
+          return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+        }
+
+        /* =====================================================
+         API
+      ====================================================== */
+
+        async function api(path) {
+          const url = API + path;
+
+          console.log("🌐 DROPMAIL REQUEST");
+          console.log(url);
+
+          const controller = new AbortController();
+
+          const timeout = setTimeout(() => {
+            controller.abort();
+          }, 15000);
+
+          try {
+            const response = await fetch(url, {
+              method: "GET",
+
+              cache: "no-store",
+
+              headers: {
+                Accept: "application/json",
+              },
+
+              signal: controller.signal,
+            });
+
+            const raw = await response.text();
+
+            console.log("📡 RESPONSE", response.status, raw);
+
+            let data;
+
+            try {
+              data = raw ? JSON.parse(raw) : null;
+            } catch {
+              throw new Error("The mail server returned invalid JSON.");
+            }
+
+            if (!response.ok) {
+              if (response.status === 429) {
+                const retryAfter = response.headers.get("Retry-After");
+
+                throw new Error(
+                  `Mail123 rate limit reached${
+                    retryAfter ? ` — retry in ${retryAfter}s` : ""
+                  }.`,
+                );
+              }
+
+              throw new Error(
+                data?.error ||
+                  data?.message ||
+                  `Mail server returned HTTP ${response.status}.`,
+              );
+            }
+
+            if (data && data.success === false) {
+              throw new Error(
+                data.error || data.message || "Mail server reported a failure.",
+              );
+            }
+
+            return data;
+          } catch (error) {
+            if (error?.name === "AbortError") {
+              throw new Error("Mail server request timed out.");
+            }
+
+            throw error;
+          } finally {
+            clearTimeout(timeout);
+          }
+        }
+
+        /* =====================================================
+         TOAST
+      ====================================================== */
+
+        function showToast(message, type = "good") {
+          const toast = document.createElement("div");
+
+          toast.className = `toast ${type}`;
+
+          toast.innerHTML = `
+          <span class="toast-icon">
+            ${type === "bad" ? "⚠️" : "✦"}
+          </span>
+
+          <div>
+            ${escapeHTML(message)}
+          </div>
+        `;
+
+          $("toastStack").appendChild(toast);
+
+          requestAnimationFrame(() => {
+            toast.classList.add("show");
+          });
+
+          setTimeout(() => {
+            toast.classList.remove("show");
+
+            setTimeout(() => {
+              toast.remove();
+            }, 250);
+          }, 3500);
+        }
+
+        /* =====================================================
+         CREATE MAILBOX
+      ====================================================== */
+
+        async function createMailbox() {
+          if (state.creating) {
+            return;
+          }
+
+          state.creating = true;
+
+          stopPolling();
+
+          $("newBtn").disabled = true;
+
+          $("topNew").disabled = true;
+
+          $("newLabel").innerHTML = `
+          <span class="loader"></span>
+          Creating…
+        `;
+
+          setConnection("Creating…");
+
+          $("pollStatus").textContent = "Creating mailbox…";
+
+          try {
+            const data = await api("/mailbox/new");
+
+            console.log("📮 CREATED MAILBOX:", data);
+
+            const address = String(data?.address || "").trim();
+
+            if (!address) {
+              throw new Error("The server did not return an email address.");
+            }
+
+            state.mailbox = {
+              address,
+
+              expiresInDays: data.expires_in_days ?? 7,
+
+              createdAt: new Date().toISOString(),
+            };
+
+            state.messages = [];
+
+            state.knownIds = new Set();
+
+            state.hiddenIds = new Set();
+
+            state.currentMessage = null;
+
+            saveMailbox();
+
+            renderAddress();
+
+            updateCounts();
+
+            hideDetail();
+
+            renderMessages();
+
+            setConnection("Online");
+
+            $("pollStatus").textContent = "Inbox ready";
+
+            makeSuccessBurst();
+
+            showToast("New temporary inbox created ✨");
+
+            /*
+            Check immediately.
+          */
+            await refreshInbox(true, true);
+
+            startPolling();
+          } catch (error) {
+            console.error("❌ CREATE MAILBOX ERROR:", error);
+
+            setConnection("Connection issue");
+
+            $("pollStatus").textContent = "Could not create inbox";
+
+            showToast(error?.message || "Could not create mailbox.", "bad");
+          } finally {
+            state.creating = false;
+
+            $("newBtn").disabled = false;
+
+            $("topNew").disabled = false;
+
+            $("newLabel").textContent = "✨ New inbox";
+          }
+        }
+
+        /* =====================================================
+         RESTORE
+      ====================================================== */
+
+        async function restoreMailbox() {
+          state.mailbox = loadMailbox();
+
+          renderAddress();
+
+          if (!state.mailbox?.address) {
+            await createMailbox();
+            return;
+          }
+
+          setLoading();
+
+          setConnection("Checking inbox…");
+
+          $("pollStatus").textContent = "Checking saved inbox…";
+
+          try {
+            await refreshInbox(true, false);
+
+            setConnection("Online");
+
+            startPolling();
+          } catch (error) {
+            console.warn("Saved mailbox could not be checked:", error);
+
+            /*
+            Important:
+            A request failure does not automatically mean
+            the mailbox expired.
+
+            We keep the mailbox and allow the user to retry.
+          */
+
+            setConnection("Inbox unavailable");
+
+            $("pollStatus").textContent = "Press Refresh to retry";
+
+            renderMessages();
+          }
+        }
+
+        /* =====================================================
+         NORMALIZE SENDER
+      ====================================================== */
+
+        function normalizeSender(value) {
+          if (!value) {
+            return "Unknown sender";
+          }
+
+          if (typeof value === "string") {
+            return value;
+          }
+
+          if (typeof value === "object") {
+            return (
+              value.address || value.email || value.name || "Unknown sender"
+            );
+          }
+
+          return String(value);
+        }
+
+        /* =====================================================
+         NORMALIZE MESSAGE
+      ====================================================== */
+
+        function normalizeMessage(message, fallbackIndex = 0) {
+          const rawId =
+            message?.id ??
+            message?.message_id ??
+            message?.uid ??
+            `fallback-${fallbackIndex}`;
+
+          const text =
+            message?.text || message?.text_body || message?.body || "";
+
+          const html = message?.html || message?.html_body || "";
+
+          const cleanedHTML = stripHTML(html);
+
+          const intro =
+            message?.intro ||
+            message?.preview ||
+            message?.snippet ||
+            text.slice(0, 180) ||
+            cleanedHTML.slice(0, 180) ||
+            "";
+
+          return {
+            id: String(rawId),
+
+            from: normalizeSender(
+              message?.from ?? message?.sender ?? message?.from_address,
+            ),
+
+            subject: message?.subject || "(No subject)",
+
+            intro,
+
+            text,
+
+            html,
+
+            otp: message?.otp_code || message?.otp || null,
+
+            createdAt:
+              message?.created_at ||
+              message?.createdAt ||
+              message?.date ||
+              message?.timestamp ||
+              Date.now(),
+
+            seen: Boolean(
+              message?.seen ?? message?.read ?? message?.is_read ?? false,
+            ),
+
+            attachments: Array.isArray(message?.attachments)
+              ? message.attachments
+              : [],
+          };
+        }
+
+        /* =====================================================
+         EXTRACT MESSAGE ARRAY
+      ====================================================== */
+
+        function extractMessages(data) {
+          console.log("🔎 EXTRACTING MESSAGES FROM:", data);
+
+          if (Array.isArray(data?.messages)) {
+            return data.messages;
+          }
+
+          if (Array.isArray(data?.data?.messages)) {
+            return data.data.messages;
+          }
+
+          if (Array.isArray(data)) {
+            return data;
+          }
+
+          return null;
+        }
+
+        /* =====================================================
+         REFRESH INBOX
+      ====================================================== */
+
+        async function refreshInbox(silent = false, throwErrors = false) {
+          if (!state.mailbox?.address) {
+            return;
+          }
+
+          if (state.refreshing) {
+            return;
+          }
+
+          state.refreshing = true;
+
+          if (!silent) {
+            $("refreshBtn").disabled = true;
+
+            $("topRefresh").disabled = true;
+          }
+
+          setRefreshing(true);
+
+          try {
+            const address = state.mailbox.address;
+
+            /*
+            @ is intentionally kept in the path.
+            This is the format shown by Mail123's
+            current JavaScript API example.
+          */
+
+            const path = `/mailbox/${address}/messages?limit=100`;
+
+            console.log("📬 CHECKING INBOX:", API + path);
+
+            const data = await api(path);
+
+            console.log("📨 API OBJECT:", data);
+
+            const rawMessages = extractMessages(data);
+
+            /*
+            Do not silently convert an unexpected
+            API response into an empty inbox.
+          */
+
+            if (!rawMessages) {
+              showAPIProblem(data);
+
+              throw new Error(
+                "The mail server returned an unexpected response format.",
+              );
+            }
+
+            console.log(`📨 ${rawMessages.length} MESSAGE(S)`);
+
+            const oldIds = new Set(state.knownIds);
+
+            state.messages = rawMessages
+              .map((message, index) => normalizeMessage(message, index))
+              .filter((message) => !state.hiddenIds.has(message.id));
+
+            /*
+            Newest first.
+          */
+
+            state.messages.sort((a, b) => {
+              const aTime = new Date(a.createdAt).getTime();
+
+              const bTime = new Date(b.createdAt).getTime();
+
+              return (
+                (Number.isFinite(bTime) ? bTime : 0) -
+                (Number.isFinite(aTime) ? aTime : 0)
+              );
+            });
+
+            state.knownIds = new Set(
+              state.messages.map((message) => message.id),
+            );
+
+            renderMessages();
+
+            updateCounts();
+
+            setConnection("Online");
+
+            $("pollStatus").textContent = state.messages.length
+              ? `${state.messages.length} message${
+                  state.messages.length === 1 ? "" : "s"
+                }`
+              : "Waiting for mail…";
+
+            /*
+            Newly arrived messages.
+          */
+
+            if (oldIds.size > 0) {
+              const newMessages = state.messages.filter(
+                (message) => !oldIds.has(message.id),
+              );
+
+              if (newMessages.length) {
+                showToast(
+                  `${newMessages.length} new message${
+                    newMessages.length === 1 ? "" : "s"
+                  } arrived 📬`,
+                );
+
+                mailArrivalAnimation();
+              }
+            }
+          } catch (error) {
+            console.error("❌ INBOX ERROR:", error);
+
+            setConnection("Inbox error");
+
+            $("pollStatus").textContent = "Could not load messages";
+
+            if (!silent) {
+              showToast(
+                "Inbox error: " + (error?.message || "Unknown error"),
+                "bad",
+              );
+            }
+
+            /*
+            Only throw when explicitly requested.
+          */
+
+            if (throwErrors) {
+              throw error;
+            }
+          } finally {
+            state.refreshing = false;
+
+            if (!silent) {
+              $("refreshBtn").disabled = false;
+
+              $("topRefresh").disabled = false;
+            }
+
+            setRefreshing(false);
+
+            scheduleCountdown();
+          }
+        }
+
+        /* =====================================================
+         API PROBLEM PANEL
+      ====================================================== */
+
+        function showAPIProblem(data) {
+          $("mailList").innerHTML = `
+          <div class="empty">
+            <div class="empty-card">
+
+              <div class="empty-icon">
+                ⚠️
+              </div>
+
+              <h3>
+                Mail server response problem
+              </h3>
+
+              <p>
+                DropMail reached the server,
+                but the response wasn't in the
+                format expected for an inbox.
+              </p>
+
+              <div class="debug-panel">
+
+                <strong>
+                  Actual server response
+                </strong>
+
+                <pre>${escapeHTML(JSON.stringify(data, null, 2))}</pre>
+
+              </div>
+
+            </div>
+          </div>
+        `;
+        }
+
+        /* =====================================================
+         OPEN MESSAGE
+      ====================================================== */
+
+        async function openMessage(id) {
+          const local = state.messages.find(
+            (message) => String(message.id) === String(id),
+          );
+
+          if (!local) {
+            return;
+          }
+
+          let message = local;
+
+          try {
+            const address = state.mailbox.address;
+
+            const path = `/mailbox/${address}/messages/${encodeURIComponent(
+              id,
+            )}`;
+
+            console.log("📖 OPEN MESSAGE:", API + path);
+
+            const data = await api(path);
+
+            console.log("📖 FULL MESSAGE DATA:", data);
+
+            const full = data?.message || data?.data || data;
+
+            if (full && typeof full === "object") {
+              const normalized = normalizeMessage(full);
+
+              message = {
+                ...local,
+                ...normalized,
+                id: local.id,
+              };
+            }
+          } catch (error) {
+            console.warn("⚠️ Could not load full message:", error);
+
+            /*
+            We still open the message using
+            its list data.
+          */
+          }
+
+          /*
+          Locally mark as read.
+        */
+
+          const localCopy = state.messages.find(
+            (item) => String(item.id) === String(id),
+          );
+
+          if (localCopy) {
+            localCopy.seen = true;
+          }
+
+          state.currentMessage = message;
+
+          renderDetail(message);
+
+          $("listView").style.display = "none";
+
+          $("detailView").classList.add("active");
+
+          $("pageTitle").textContent = "Message";
+
+          $("pageSubtitle").textContent = "Reading the selected email.";
+
+          updateCounts();
+        }
+
+        /* =====================================================
+         ADDRESS
+      ====================================================== */
+
+        function renderAddress() {
+          $("address").textContent = state.mailbox?.address || "Generating…";
+        }
+
+        /* =====================================================
+         MESSAGE LIST
+      ====================================================== */
+
+        function renderMessages() {
+          const query = $("search").value.trim().toLowerCase();
+
+          const filtered = state.messages.filter((message) => {
+            const haystack = [
+              message.from,
+              message.subject,
+              message.intro,
+              message.text,
+              message.otp,
+            ]
+              .join(" ")
+              .toLowerCase();
+
+            return haystack.includes(query);
+          });
+
+          /*
+          No mail.
+        */
+
+          if (state.messages.length === 0) {
+            $("mailList").innerHTML = `
+            <div class="empty">
+
+              <div class="empty-card">
+
+                <div class="orbit"></div>
+
+                <div class="empty-icon">
+                  📭
+                </div>
+
+                <h3>
+                  Your inbox is empty
+                </h3>
+
+                <p>
+                  We're listening for new mail.
+                  Send something to:
+                </p>
+
+                <p style="
+                  margin-top:10px;
+                  color:#fff;
+                  font-family:ui-monospace,monospace;
+                  font-size:12px;
+                  font-weight:800;
+                  word-break:break-all;
+                ">
+                  ${escapeHTML(
+                    state.mailbox?.address || "your temporary address",
+                  )}
+                </p>
+
+                <div class="listening">
+                  <span></span>
+                  listening for mail
+                </div>
+
+              </div>
+
+            </div>
+          `;
+
+            return;
+          }
+
+          /*
+          Search returned nothing.
+        */
+
+          if (filtered.length === 0) {
+            $("mailList").innerHTML = `
+            <div class="empty">
+
+              <div class="empty-card">
+
+                <div class="empty-icon">
+                  🔎
+                </div>
+
+                <h3>
+                  No messages found
+                </h3>
+
+                <p>
+                  Try another sender,
+                  subject, preview, or OTP.
+                </p>
+
+              </div>
+
+            </div>
+          `;
+
+            return;
+          }
+
+          $("mailList").innerHTML = `
+          <div class="messages">
+
+            ${filtered
+              .map(
+                (message, index) => `
+                  <article
+                    class="message ${message.seen ? "" : "unread"}"
+                    data-id="${escapeHTML(message.id)}"
+                    style="
+                      --delay:
+                      ${Math.min(index * 45, 300)}ms
+                    "
+                  >
+
+                    <div class="avatar">
+                      ${escapeHTML(getInitial(message.from))}
+                    </div>
+
+                    <div class="message-main">
+
+                      <div class="message-top">
+
+                        <div class="sender">
+                          ${escapeHTML(message.from)}
+                        </div>
+
+                        ${
+                          message.otp
+                            ? `
+                              <span class="badge">
+                                OTP
+                              </span>
+                            `
+                            : ""
+                        }
+
+                      </div>
+
+                      <div class="subject">
+                        ${escapeHTML(message.subject)}
+                      </div>
+
+                      <div class="intro">
+                        ${escapeHTML(message.intro || "No preview available.")}
+                      </div>
+
+                    </div>
+
+                    <div class="message-meta">
+
+                      ${
+                        message.seen
+                          ? ""
+                          : `
+                            <span
+                              class="unread-dot"
+                            ></span>
+                          `
+                      }
+
+                      <span>
+                        ${escapeHTML(prettyDate(message.createdAt))}
+                      </span>
+
+                    </div>
+
+                  </article>
+                `,
+              )
+              .join("")}
+
+          </div>
+        `;
+
+          document.querySelectorAll(".message").forEach((card) => {
+            card.addEventListener("click", () => {
+              openMessage(card.dataset.id);
+            });
+          });
+        }
+
+        /* =====================================================
+         DETAIL
+      ====================================================== */
+
+        function renderDetail(message) {
+          const sender = normalizeSender(message.from);
+
+          const body =
+            message.text?.trim() ||
+            stripHTML(message.html) ||
+            message.intro ||
+            "This message has no readable text body.";
+
+          const otp = message.otp
+            ? `
+              <div class="otp-box">
+
+                <div class="otp-label">
+                  🔐 DETECTED VERIFICATION CODE
+                </div>
+
+                <div class="otp-code">
+                  ${escapeHTML(message.otp)}
+                </div>
+
+              </div>
+            `
+            : "";
+
+          let attachments = "";
+
+          if (
+            Array.isArray(message.attachments) &&
+            message.attachments.length
+          ) {
+            attachments = `
+            <div class="attachments">
+
+              <div class="attachments-title">
+                📎 Attachments
+                (${message.attachments.length})
+              </div>
+
+              <div class="attachments-list">
+                ${message.attachments
+                  .map((attachment) =>
+                    escapeHTML(
+                      attachment.filename || attachment.name || "attachment",
+                    ),
+                  )
+                  .join(" • ")}
+              </div>
+
+            </div>
+          `;
+          }
+
+          $("emailDetail").innerHTML = `
+          <article class="email-card">
+
+            <div class="email-head">
+
+              <h1 class="email-subject">
+                ${escapeHTML(message.subject || "(No subject)")}
+              </h1>
+
+              <div class="from-line">
+
+                <div class="avatar">
+                  ${escapeHTML(getInitial(sender))}
+                </div>
+
+                <div class="from-copy">
+
+                  <strong>
+                    ${escapeHTML(sender)}
+                  </strong>
+
+                  <span>
+                    ${escapeHTML(fullDate(message.createdAt))}
+                  </span>
+
+                </div>
+
+              </div>
+
+              ${otp}
+
+            </div>
+
+            <div class="email-body">
+
+              <div class="email-body-text">
+                ${escapeHTML(body)}
+              </div>
+
+              ${attachments}
+
+            </div>
+
+          </article>
+        `;
+        }
+
+        /* =====================================================
+         COUNTERS
+      ====================================================== */
+
+        function updateCounts() {
+          $("totalCount").textContent = state.messages.length;
+
+          $("unreadCount").textContent = state.messages.filter(
+            (message) => !message.seen,
+          ).length;
+        }
+
+        /* =====================================================
+         LOADING
+      ====================================================== */
+
+        function setLoading() {
+          $("mailList").innerHTML = `
+          <div class="skeletons">
+
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+
+          </div>
+        `;
+        }
+
+        /* =====================================================
+         CONNECTION
+      ====================================================== */
+
+        function setConnection(text) {
+          $("connection").textContent = text;
+        }
+
+        /* =====================================================
+         REFRESH ANIMATION
+      ====================================================== */
+
+        function setRefreshing(active) {
+          $("refreshBtn").classList.toggle("spinning", active);
+
+          $("topRefresh").classList.toggle("spinning", active);
+        }
+
+        /* =====================================================
+         POLLING
+      ====================================================== */
+
+        /* =====================================================
+   ADAPTIVE POLLING
+===================================================== */
+
+        const POLL_SCHEDULE = [0, 5000, 10000, 20000, 35000, 55000, 90000];
+
+        let pollStep = 0;
+        let pollTimeout = null;
+
+        function startPolling() {
+          stopPolling();
+
+          pollStep = 0;
+
+          scheduleNextPoll();
+        }
+
+        function scheduleNextPoll() {
+          clearTimeout(pollTimeout);
+
+          const delay =
+            POLL_SCHEDULE[Math.min(pollStep, POLL_SCHEDULE.length - 1)];
+
+          state.nextPoll = Date.now() + delay;
+
+          if (delay === 0) {
+            runPoll();
+            return;
+          }
+
+          pollTimeout = setTimeout(runPoll, delay);
+
+          startCountdown();
+        }
+
+        async function runPoll() {
+          try {
+            await refreshInbox(true);
+          } catch (error) {
+            console.warn("Background inbox check failed:", error);
+          }
+
+          /*
+    Once we've reached the final step,
+    continue checking every 90 seconds.
+  */
+          if (pollStep < POLL_SCHEDULE.length - 1) {
+            pollStep++;
+          }
+
+          scheduleNextPoll();
+        }
+
+        function stopPolling() {
+          if (pollTimeout) {
+            clearTimeout(pollTimeout);
+          }
+
+          if (state.countdownTimer) {
+            clearInterval(state.countdownTimer);
+          }
+
+          pollTimeout = null;
+
+          state.countdownTimer = null;
+        }
+
+        function startCountdown() {
+          clearInterval(state.countdownTimer);
+
+          state.countdownTimer = setInterval(() => {
+            const remaining = Math.max(0, state.nextPoll - Date.now());
+
+            $("pollTimer").textContent =
+              remaining > 0 ? `${Math.ceil(remaining / 1000)}s` : "now";
+          }, 250);
+        }
+
+        /* =====================================================
+         HIDE DETAIL
+      ====================================================== */
+
+        function hideDetail() {
+          state.currentMessage = null;
+
+          $("detailView").classList.remove("active");
+
+          $("listView").style.display = "";
+
+          $("pageTitle").textContent = "Inbox";
+
+          $("pageSubtitle").textContent =
+            "Messages arriving at your temporary address.";
+        }
+
+        /* =====================================================
+         MAIL ARRIVAL FX
+      ====================================================== */
+
+        function mailArrivalAnimation() {
+          const list = $("mailList");
+
+          list.style.transform = "translateY(4px)";
+
+          list.style.opacity = "0.65";
+
+          requestAnimationFrame(() => {
+            list.style.transition = "transform .5s ease, opacity .5s ease";
+
+            list.style.transform = "translateY(0)";
+
+            list.style.opacity = "1";
+          });
+        }
+
+        /* =====================================================
+         SUCCESS BURST
+      ====================================================== */
+
+        function makeSuccessBurst() {
+          const burst = document.createElement("div");
+
+          burst.className = "burst";
+
+          for (let i = 0; i < 30; i++) {
+            const particle = document.createElement("span");
+
+            const angle = Math.random() * Math.PI * 2;
+
+            const distance = 70 + Math.random() * 180;
+
+            particle.style.setProperty(
+              "--x",
+              `${Math.cos(angle) * distance}px`,
+            );
+
+            particle.style.setProperty(
+              "--y",
+              `${Math.sin(angle) * distance}px`,
+            );
+
+            particle.style.setProperty("--delay", `${Math.random() * 140}ms`);
+
+            burst.appendChild(particle);
+          }
+
+          document.body.appendChild(burst);
+
+          setTimeout(() => {
+            burst.remove();
+          }, 1200);
+        }
+
+        /* =====================================================
+         UTILITIES
+      ====================================================== */
+
+        function getInitial(text) {
+          return (
+            String(text || "?")
+              .trim()
+              .charAt(0)
+              .toUpperCase() || "?"
+          );
+        }
+
+        function prettyDate(value) {
+          const d = new Date(value);
+
+          if (Number.isNaN(d.getTime())) {
+            return "Unknown";
+          }
+
+          const now = new Date();
+
+          if (d.toDateString() === now.toDateString()) {
+            return d.toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+            });
+          }
+
+          return d.toLocaleDateString([], {
+            month: "short",
+            day: "numeric",
+          });
+        }
+
+        function fullDate(value) {
+          const d = new Date(value);
+
+          if (Number.isNaN(d.getTime())) {
+            return "Unknown";
+          }
+
+          return d.toLocaleString();
+        }
+
+        function stripHTML(html) {
+          const div = document.createElement("div");
+
+          div.innerHTML = html || "";
+
+          return (div.textContent || div.innerText || "").trim();
+        }
+
+        /* =====================================================
+         COPY
+      ====================================================== */
+
+        $("copyBtn").addEventListener("click", async () => {
+          const address = state.mailbox?.address;
+
+          if (!address) {
+            return;
+          }
+
+          try {
+            await navigator.clipboard.writeText(address);
+
+            showToast("Temporary email copied 📋");
+          } catch {
+            showToast("Clipboard access was blocked.", "bad");
+          }
+        });
+
+        /* =====================================================
+         NEW MAILBOX
+      ====================================================== */
+
+        $("newBtn").addEventListener("click", createMailbox);
+
+        $("topNew").addEventListener("click", createMailbox);
+
+        /* =====================================================
+         REFRESH
+      ====================================================== */
+
+        $("refreshBtn").addEventListener("click", async () => {
+          pollStep = 0;
+
+          try {
+            await refreshInbox(false, false);
+          } catch {}
+
+          scheduleNextPoll();
+        });
+
+        $("topRefresh").addEventListener("click", async () => {
+          pollStep = 0;
+
+          try {
+            await refreshInbox(false, false);
+          } catch {}
+
+          scheduleNextPoll();
+        });
+
+        $("topRefresh").addEventListener("click", () => {
+          refreshInbox(false, false);
+        });
+
+        /* =====================================================
+         BACK
+      ====================================================== */
+
+        $("backBtn").addEventListener("click", hideDetail);
+
+        /* =====================================================
+         HIDE MESSAGE
+      ====================================================== */
+
+        $("hideBtn").addEventListener("click", () => {
+          if (!state.currentMessage) {
+            return;
+          }
+
+          const id = String(state.currentMessage.id);
+
+          state.hiddenIds.add(id);
+
+          state.messages = state.messages.filter(
+            (message) => String(message.id) !== id,
+          );
+
+          state.knownIds.delete(id);
+
+          hideDetail();
+
+          renderMessages();
+
+          updateCounts();
+
+          showToast("Message hidden from this inbox.");
+        });
+
+        /* =====================================================
+         SEARCH
+      ====================================================== */
+
+        $("search").addEventListener("input", renderMessages);
+
+        /* =====================================================
+         PARTICLES
+      ====================================================== */
+
+        const canvas = $("particles");
+
+        const ctx = canvas.getContext("2d");
+
+        const particles = [];
+
+        function resizeCanvas() {
+          const ratio = Math.min(window.devicePixelRatio || 1, 2);
+
+          canvas.width = window.innerWidth * ratio;
+
+          canvas.height = window.innerHeight * ratio;
+
+          canvas.style.width = window.innerWidth + "px";
+
+          canvas.style.height = window.innerHeight + "px";
+
+          ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        }
+
+        function createParticles() {
+          particles.length = 0;
+
+          const amount = Math.min(100, Math.floor(window.innerWidth / 14));
+
+          for (let i = 0; i < amount; i++) {
+            particles.push({
+              x: Math.random() * window.innerWidth,
+
+              y: Math.random() * window.innerHeight,
+
+              size: 0.5 + Math.random() * 1.7,
+
+              speed: 0.06 + Math.random() * 0.25,
+
+              drift: (Math.random() - 0.5) * 0.16,
+
+              alpha: 0.12 + Math.random() * 0.42,
+            });
+          }
+        }
+
+        function animateParticles() {
+          ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+          for (const p of particles) {
+            p.y -= p.speed;
+
+            p.x += p.drift;
+
+            if (p.y < -10) {
+              p.y = window.innerHeight + 10;
+            }
+
+            if (p.x < -10) {
+              p.x = window.innerWidth + 10;
+            }
+
+            if (p.x > window.innerWidth + 10) {
+              p.x = -10;
+            }
+
+            ctx.globalAlpha = p.alpha;
+
+            ctx.beginPath();
+
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+
+            ctx.fillStyle = "rgba(255,255,255,.75)";
+
+            ctx.fill();
+          }
+
+          requestAnimationFrame(animateParticles);
+        }
+
+        resizeCanvas();
+
+        createParticles();
+
+        animateParticles();
+
+        window.addEventListener("resize", () => {
+          resizeCanvas();
+          createParticles();
+        });
+
+        function scheduleCountdown() {
+          startCountdown();
+        }
+
+        /* =====================================================
+         CLEANUP
+      ====================================================== */
+
+        window.addEventListener("beforeunload", stopPolling);
+
+        /* =====================================================
+         START APP
+      ====================================================== */
+
+        updateCounts();
+
+        setLoading();
+
+        restoreMailbox();
+      })();
+    </script>
+  </body>
+</html>
