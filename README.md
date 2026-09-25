@@ -52,7 +52,7 @@ Instead of looking like an ancient utility page from 2009, DropMail is designed 
 ### Main Inbox
 
 <img
-src="assets/screenshots/inbox.png"
+src="inbox.png"
 alt="DropMail inbox"
 width="900"
 />
@@ -62,7 +62,7 @@ width="900"
 ### Reading an Email
 
 <img
-src="assets/screenshots/message.png"
+src="message.png"
 alt="DropMail message reader"
 width="900"
 />
@@ -72,7 +72,7 @@ width="900"
 ### Mobile
 
 <img
-src="assets/screenshots/mobile.png"
+src=mobile.png"
 alt="DropMail mobile layout"
 width="340"
 />
